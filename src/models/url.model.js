@@ -15,13 +15,19 @@ const urlSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
-        visitHistory: [
-            {
-                timestamp: {
-                    type: Number,
-                },
-            },
-        ],
+    visitHistory: [
+    {
+        timestamp: {
+            type: Number,
+        },
+        ip: {
+            type: String,
+        },
+        userAgent: {
+            type: String,
+        },
+    },
+],
     },
     {
         timestamps: true,

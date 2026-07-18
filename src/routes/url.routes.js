@@ -4,23 +4,42 @@ import {
     redirectURL,
     getAnalytics,
     deleteShortURL,
+    getDashboard,
+    searchURL,
+    getStatistics,
 } from "../controllers/url.controller.js";
 
 const router = Router();
+
+console.log("URL ROUTER FILE LOADED");
+
+router.get("/", (req, res) => {
+    console.log("ROOT ROUTE HIT");
+    res.send("Router is working");
+});
+
+/**
+ * @swagger
+ * tags:
+ *   name: URL
+ *   description: URL Shortener APIs
+ */
+
 
 /**
  * @swagger
  * /url:
  *   post:
  *     summary: Create a Short URL
- *     tags:
- *       - URL
+ *     tags: [URL]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - url
  *             properties:
  *               url:
  *                 type: string
@@ -31,6 +50,7 @@ const router = Router();
  *               expiresAt:
  *                 type: string
  *                 format: date-time
+ *                 example: 2026-12-31T00:00:00.000Z
  *     responses:
  *       201:
  *         description: Short URL created successfully
@@ -38,19 +58,61 @@ const router = Router();
  *         description: Invalid URL
  */
 
-
-
 // Create Short URL
 router.post("/", generateShortURL);
+
+
+
+/**
+ * @swagger
+ * /url/dashboard:
+ *   get:
+ *     summary: Get dashboard statistics
+ *     tags: [URL]
+ *     responses:
+ *       200:
+ *         description: Dashboard fetched successfully
+ */
+
+// Dashboard
+router.get("/dashboard", getDashboard);
+
+// Statistics
+router.get("/statistics", getStatistics);
+
+
+
+/**
+ * @swagger
+ * /url/search/{keyword}:
+ *   get:
+ *     summary: Search URLs
+ *     tags: [URL]
+ *     parameters:
+ *       - in: path
+ *         name: keyword
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: google
+ *     responses:
+ *       200:
+ *         description: Matching URLs found
+ *       404:
+ *         description: No matching URLs found
+ */
+
+// Search URL
+router.get("/search/:keyword", searchURL);
+
 
 
 /**
  * @swagger
  * /url/analytics/{shortId}:
  *   get:
- *     summary: Get URL Analytics
- *     tags:
- *       - URL
+ *     summary: Get URL analytics
+ *     tags: [URL]
  *     parameters:
  *       - in: path
  *         name: shortId
@@ -69,13 +131,13 @@ router.post("/", generateShortURL);
 router.get("/analytics/:shortId", getAnalytics);
 
 
+
 /**
  * @swagger
  * /url/{shortId}:
  *   delete:
- *     summary: Delete Short URL
- *     tags:
- *       - URL
+ *     summary: Delete short URL
+ *     tags: [URL]
  *     parameters:
  *       - in: path
  *         name: shortId
@@ -90,17 +152,17 @@ router.get("/analytics/:shortId", getAnalytics);
  *         description: Short URL not found
  */
 
-// Delete Short URL
+// Delete URL
 router.delete("/:shortId", deleteShortURL);
+
 
 
 /**
  * @swagger
  * /url/{shortId}:
  *   get:
- *     summary: Redirect to Original URL
- *     tags:
- *       - URL
+ *     summary: Redirect to original URL
+ *     tags: [URL]
  *     parameters:
  *       - in: path
  *         name: shortId
@@ -110,12 +172,13 @@ router.delete("/:shortId", deleteShortURL);
  *         example: google
  *     responses:
  *       302:
- *         description: Redirects to original URL
+ *         description: Redirect successful
  *       404:
  *         description: Short URL not found
  */
 
-// Redirect
+// Redirect URL (keep this LAST)
 router.get("/:shortId", redirectURL);
+
 
 export default router;
