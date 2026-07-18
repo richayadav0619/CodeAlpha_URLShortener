@@ -1,5 +1,6 @@
 import express from "express";
 import urlRouter from "./routes/url.routes.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -18,5 +19,5 @@ app.get("/test", (req, res) => {
     });
 });
 
-
+app.use(errorHandler);
 export { app };
