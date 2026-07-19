@@ -7,6 +7,7 @@ import { swaggerUi, swaggerSpec } from "./config/swagger.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
