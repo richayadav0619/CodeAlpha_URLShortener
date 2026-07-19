@@ -7,16 +7,10 @@ import {
     getDashboard,
     searchURL,
     getStatistics,
+    getAllURLs,
 } from "../controllers/url.controller.js";
 
 const router = Router();
-
-console.log("URL ROUTER FILE LOADED");
-
-router.get("/", (req, res) => {
-    console.log("ROOT ROUTE HIT");
-    res.send("Router is working");
-});
 
 /**
  * @swagger
@@ -61,6 +55,31 @@ router.get("/", (req, res) => {
 // Create Short URL
 router.post("/", generateShortURL);
 
+/**
+ * @swagger
+ * /url:
+ *   get:
+ *     summary: Get all URLs with pagination
+ *     tags: [URL]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         example: 5
+ *     responses:
+ *       200:
+ *         description: URLs fetched successfully
+ */
+
+// Get all URLs (Paginated)
+router.get("/", getAllURLs);
+
 
 
 /**
@@ -76,6 +95,19 @@ router.post("/", generateShortURL);
 
 // Dashboard
 router.get("/dashboard", getDashboard);
+
+
+/**
+ * @swagger
+ * /url/statistics:
+ *   get:
+ *     summary: Get URL statistics
+ *     tags: [URL]
+ *     responses:
+ *       200:
+ *         description: Statistics fetched successfully
+ */
+
 
 // Statistics
 router.get("/statistics", getStatistics);

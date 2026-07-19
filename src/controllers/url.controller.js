@@ -277,6 +277,37 @@ return res.status(200).json(
 
 });
 
+
+// get all urls
+const getAllURLs = asyncHandler(async (req, res) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+
+    const skip = (page - 1) * limit;
+
+    const urls = await URL.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalURLs = await URL.countDocuments();
+
+    const totalPages = Math.ceil(totalURLs / limit);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                currentPage: page,
+                totalPages,
+                totalURLs,
+                urls,
+            },
+            "URLs fetched successfully"
+        )
+    );
+});
+
 export {
     generateShortURL,
     redirectURL,
@@ -285,4 +316,5 @@ export {
     getDashboard,
     searchURL,
     getStatistics,
+    getAllURLs,
 };
