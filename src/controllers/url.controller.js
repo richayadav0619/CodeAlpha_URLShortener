@@ -147,43 +147,60 @@ const deleteShortURL = asyncHandler(async (req, res) => {
 
 const getDashboard = asyncHandler(async (req, res) => {
 
-    const totalURLs = await URL.countDocuments();
+    const dashboard = await URL.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalURLs: { $sum: 1 },
+                totalClicks: { $sum: { $size: "$visitHistory" } },
+                activeURLs: {
+                    $sum: {
+                        $cond: [
+                            {
+                                $or: [
+                                    { $eq: ["$expiresAt", null] },
+                                    { $gt: ["$expiresAt", new Date()] }
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+               expiredURLs: {
+                    $sum: {
+                        $cond: [
+                            {
+                                $and: [
+                                    { $ne: ["$expiresAt", null] },
+                                    { $lte: ["$expiresAt", new Date()] }
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                }
+            }
+        }
+    ]);
 
-    const activeURLs = await URL.countDocuments({
-        $or: [
-            { expiresAt: null },
-            { expiresAt: { $gt: new Date() } }
-        ]
-    });
-
-    const expiredURLs = await URL.countDocuments({
-        expiresAt: {
-            $lte: new Date(),
-        },
-    });
-
-    const urls = await URL.find();
-
-    let totalClicks = 0;
-
-    urls.forEach((url) => {
-        totalClicks += url.visitHistory.length;
-    });
+    const stats = dashboard[0] || {
+        totalURLs: 0,
+        activeURLs: 0,
+        expiredURLs: 0,
+        totalClicks: 0,
+    };
+    delete stats._id;
 
     return res.status(200).json(
-    new ApiResponse(
-        200,
-        {
-            totalURLs,
-            activeURLs,
-            expiredURLs,
-            totalClicks,
-        },
-        "Dashboard fetched successfully"
-    )
-);
+        new ApiResponse(
+            200,
+            stats,
+            "Dashboard fetched successfully"
+        )
+    );
 });
-
 
 
 // 👇 Create the new function HERE
@@ -220,61 +237,97 @@ const searchURL = asyncHandler(async (req, res) => {
     );
 });
 
+
+// get statistic
 const getStatistics = asyncHandler(async (req, res) => {
 
-    const totalURLs = await URL.countDocuments();
-
-    const activeURLs = await URL.countDocuments({
-        $or: [
-            { expiresAt: null },
-            { expiresAt: { $gt: new Date() } }
-        ]
-    });
-
-    const expiredURLs = await URL.countDocuments({
-    expiresAt: {
-        $lte: new Date(),
-    },
-});
-    const urls = await URL.find();
-
-    let totalClicks = 0;
-
-urls.forEach((url) => {
-    totalClicks += url.visitHistory.length;
-});
-
-let mostClickedURL = null;
-
-urls.forEach((url) => {
-    if (
-        !mostClickedURL ||
-        url.visitHistory.length > mostClickedURL.visitHistory.length
-    ) {
-        mostClickedURL = url;
-    }
-});
-
-return res.status(200).json(
-    new ApiResponse(
-        200,
+    const statistics = await URL.aggregate([
         {
-            totalURLs,
-            activeURLs,
-            expiredURLs,
-            totalClicks,
-            mostClickedURL: mostClickedURL
-                ? {
-                    shortId: mostClickedURL.shortId,
-                    redirectURL: mostClickedURL.redirectURL,
-                    clicks: mostClickedURL.visitHistory.length,
-                }
-                : null,
+            $project: {
+                shortId: 1,
+                redirectURL: 1,
+                expiresAt: 1,
+                clicks: { $size: "$visitHistory" }
+            }
         },
-        "Statistics fetched successfully"
-    )
-);
+        {
+            $group: {
+                _id: null,
+                totalURLs: { $sum: 1 },
 
+                activeURLs: {
+                    $sum: {
+                        $cond: [
+                            {
+                                $or: [
+                                    { $eq: ["$expiresAt", null] },
+                                    { $gt: ["$expiresAt", new Date()] }
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+
+                expiredURLs: {
+                    $sum: {
+                        $cond: [
+                            {
+                                $and: [
+                                    { $ne: ["$expiresAt", null] },
+                                    { $lte: ["$expiresAt", new Date()] }
+                                ]
+                            },
+                            1,
+                            0
+                        ]
+                    }
+                },
+
+                totalClicks: { $sum: "$clicks" },
+
+                urls: {
+                    $push: {
+                        shortId: "$shortId",
+                        redirectURL: "$redirectURL",
+                        clicks: "$clicks"
+                    }
+                }
+            }
+        }
+    ]);
+
+    const stats = statistics[0] || {
+        totalURLs: 0,
+        activeURLs: 0,
+        expiredURLs: 0,
+        totalClicks: 0,
+        urls: []
+    };
+
+    delete stats._id;
+
+    let mostClickedURL = null;
+
+    if (stats.urls.length > 0) {
+        mostClickedURL = stats.urls.reduce((max, current) =>
+            current.clicks > max.clicks ? current : max
+        );
+    }
+
+    delete stats.urls;
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                ...stats,
+                mostClickedURL,
+            },
+            "Statistics fetched successfully"
+        )
+    );
 });
 
 

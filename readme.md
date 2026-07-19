@@ -11,17 +11,31 @@ This API allows users to create short URLs, use custom aliases, redirect to orig
 - Create short URLs
 - Custom alias support
 - Redirect to original URLs
-- URL analytics (click tracking)
+- URL analytics with click tracking
 - Dashboard statistics
-- Search URLs
-- Pagination support
+- Advanced statistics with MongoDB Aggregation Pipeline
+- Search URLs by short ID or original URL
+- Paginated URL listing
 - Delete short URLs
-- Expiry support
+- URL expiry support
 - Swagger API documentation
 - Helmet security middleware
+- Express Rate Limiter
 - Morgan request logging
-- Rate limiting
 - Centralized error handling
+
+---
+
+## 🎯 Key Concepts Implemented
+
+- RESTful API Design
+- MVC Architecture
+- MongoDB Aggregation Pipeline
+- Pagination
+- Custom Error Handling
+- Input Validation
+- Security Best Practices
+- API Documentation with Swagger
 
 ---
 
