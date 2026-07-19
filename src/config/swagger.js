@@ -12,7 +12,8 @@ const options = {
 
         servers: [
             {
-                url: "http://localhost:8001",
+                url: "https://codealpha-urlshortener-lx5b.onrender.com",
+                description: "Production Server",
             },
         ],
     },
